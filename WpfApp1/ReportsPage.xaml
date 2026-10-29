@@ -1,0 +1,19 @@
+<UserControl x:Class="CyberClubManager.ReportsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <WrapPanel>
+            <TextBlock Text="Отчёт:" VerticalAlignment="Center" Margin="4"/>
+            <ComboBox x:Name="ReportBox" Width="320" SelectionChanged="ReportBox_SelectionChanged"/>
+            <Button Content="Сохранить в Excel" Click="Excel_Click"/>
+            <Button Content="Сохранить в PDF" Click="Pdf_Click"/>
+        </WrapPanel>
+        <DataGrid x:Name="ReportTable" Grid.Row="1" IsReadOnly="True" AutoGenerateColumns="True"
+                  Margin="0,6"
+                  AutoGeneratingColumn="ReportTable_AutoGeneratingColumn"/>
+    </Grid>
+</UserControl>

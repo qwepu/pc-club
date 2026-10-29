@@ -1,0 +1,44 @@
+<UserControl x:Class="CyberClubManager.CrudPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <WrapPanel Grid.Row="0">
+            <TextBlock Text="Поиск:" VerticalAlignment="Center" Margin="4"/>
+            <TextBox x:Name="SearchBox" Width="260" KeyDown="SearchBox_KeyDown"/>
+            <Button Content="Найти" Click="Apply_Click"/>
+            <Button Content="Сбросить всё" Click="Reset_Click"/>
+        </WrapPanel>
+
+        <WrapPanel x:Name="FilterPanel" Grid.Row="1"/>
+
+        <WrapPanel x:Name="SortPanel" Grid.Row="2">
+            <TextBlock Text="Сортировка:" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center" Margin="4,4,2,4"/>
+            <ComboBox x:Name="Sort1Box" MinWidth="150" VerticalAlignment="Center"/>
+            <Button x:Name="Dir1Button" Content="↑" ToolTip="Нажмите, чтобы изменить направление" Padding="10,6" MinWidth="38"
+                    VerticalAlignment="Center" Click="Dir1_Click" Visibility="Collapsed"/>
+            <TextBlock x:Name="ThenText" Text="затем по" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center"
+                       Margin="10,4,2,4" Visibility="Collapsed"/>
+            <ComboBox x:Name="Sort2Box" MinWidth="150" VerticalAlignment="Center" Visibility="Collapsed"/>
+            <Button x:Name="Dir2Button" Content="↑" ToolTip="Нажмите, чтобы изменить направление" Padding="10,6" MinWidth="38"
+                    VerticalAlignment="Center" Click="Dir2_Click" Visibility="Collapsed"/>
+        </WrapPanel>
+
+        <DataGrid x:Name="Table" Grid.Row="3" IsReadOnly="True" AutoGenerateColumns="True"
+                  SelectionMode="Single" SelectionUnit="FullRow"
+                  Margin="0,6"
+                  AutoGeneratingColumn="Table_AutoGeneratingColumn"/>
+
+        <DockPanel Grid.Row="4">
+            <TextBlock x:Name="CountText" DockPanel.Dock="Right" VerticalAlignment="Center" Margin="8,0"/>
+            <WrapPanel x:Name="ButtonPanel"/>
+        </DockPanel>
+    </Grid>
+</UserControl>
