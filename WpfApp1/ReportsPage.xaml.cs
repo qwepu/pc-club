@@ -34,6 +34,7 @@ public partial class ReportsPage : UserControl
             current = Database.Query(report.Sql);
             currentReport = report;
             ReportTable.ItemsSource = current.DefaultView;
+            SummaryLabel.Text = ReportExporter.SummaryText(current);
         }
         catch (Exception ex)
         {

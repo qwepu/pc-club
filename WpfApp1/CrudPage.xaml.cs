@@ -188,6 +188,15 @@ public partial class CrudPage : UserControl
         {
             parts.Add(second.Value + (desc2 ? " DESC" : " ASC"));
         }
+        bool searching = SearchBox.Text.Trim() != "" && config.SearchExpressions.Count > 0;
+        if (searching)
+        {
+            foreach (string expression in config.SearchExpressions)
+            {
+                parts.Add("CASE WHEN (" + expression + ")::text ILIKE @q THEN 0 ELSE 1 END");
+            }
+            parts.Add("1");
+        }
         if (parts.Count == 0)
         {
             return "1";

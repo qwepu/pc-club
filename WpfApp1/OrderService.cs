@@ -213,7 +213,7 @@ public static class OrderService
         try
         {
             Database.ExecuteTx(conn, tx,
-                "UPDATE products p SET quantity_in_stock = p.quantity_in_stock + (@sign * oi.quantity) FROM order_items oi WHERE oi.product_id = p.id AND oi.order_id = @o",
+                "UPDATE products p SET quantity_in_stock = p.quantity_in_stock + (@sign * oi.quantity), is_available = CASE WHEN @sign > 0 AND p.quantity_in_stock = 0 THEN TRUE ELSE p.is_available END FROM order_items oi WHERE oi.product_id = p.id AND oi.order_id = @o",
                 ("sign", sign), ("o", orderId));
         }
         catch (PostgresException ex) when (ex.SqlState == "23514")

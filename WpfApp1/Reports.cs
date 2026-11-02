@@ -58,6 +58,51 @@ public static class Reports
 
 public static class ReportExporter
 {
+    public static decimal?[] CalculateSums(DataTable table)
+    {
+        var sums = new decimal?[table.Columns.Count];
+        for (int i = 0; i < table.Columns.Count; i++)
+        {
+            Type type = table.Columns[i].DataType;
+            if (type == typeof(decimal) || type == typeof(long) || type == typeof(int))
+            {
+                decimal sum = 0;
+                foreach (DataRow row in table.Rows)
+                {
+                    if (!row.IsNull(i))
+                    {
+                        sum += Convert.ToDecimal(row[i]);
+                    }
+                }
+                sums[i] = sum;
+            }
+        }
+        return sums;
+    }
+
+    private static string FormatSum(DataColumn column, decimal value)
+    {
+        return column.DataType == typeof(decimal) ? value.ToString("N2") : value.ToString("N0");
+    }
+
+    public static string SummaryText(DataTable table)
+    {
+        decimal?[] sums = CalculateSums(table);
+        var parts = new List<string>();
+        for (int i = 0; i < sums.Length; i++)
+        {
+            if (sums[i] != null)
+            {
+                parts.Add(table.Columns[i].ColumnName + ": " + FormatSum(table.Columns[i], sums[i]!.Value));
+            }
+        }
+        if (parts.Count == 0)
+        {
+            return "Всего записей: " + table.Rows.Count;
+        }
+        return "Итого — " + string.Join("     ", parts);
+    }
+
     public static void ToExcel(DataTable table, string title, string path)
     {
         DataTable copy = table.Copy();
@@ -66,8 +111,31 @@ public static class ReportExporter
         IXLWorksheet sheet = workbook.Worksheets.Add("Отчёт");
         sheet.Cell(1, 1).Value = title;
         sheet.Cell(1, 1).Style.Font.Bold = true;
-        sheet.Cell(3, 1).InsertTable(copy);
-        sheet.Columns().AdjustToContents();
+        sheet.Cell(1, 1).Style.Font.FontSize = 14;
+        sheet.Cell(2, 1).Value = "Сформирован: " + DateTime.Now.ToString("dd.MM.yyyy HH:mm");
+        sheet.Cell(4, 1).InsertTable(copy);
+
+        int totalRow = 4 + table.Rows.Count + 1;
+        decimal?[] sums = CalculateSums(table);
+        if (sums.Any(x => x != null))
+        {
+            sheet.Cell(totalRow, 1).Value = "Итого";
+            for (int i = 0; i < sums.Length; i++)
+            {
+                if (sums[i] != null)
+                {
+                    IXLCell cell = sheet.Cell(totalRow, i + 1);
+                    cell.Value = (double)sums[i]!.Value;
+                    cell.Style.NumberFormat.Format = table.Columns[i].DataType == typeof(decimal) ? "#,##0.00" : "#,##0";
+                }
+            }
+        }
+        else
+        {
+            sheet.Cell(totalRow, 1).Value = "Всего записей: " + table.Rows.Count;
+        }
+        sheet.Range(totalRow, 1, totalRow, table.Columns.Count).Style.Font.Bold = true;
+        sheet.Columns().AdjustToContents(4, totalRow);
         workbook.SaveAs(path);
     }
 
@@ -75,6 +143,8 @@ public static class ReportExporter
     {
         QuestPDF.Settings.License = LicenseType.Community;
         string date = DateTime.Now.ToString("dd.MM.yyyy HH:mm");
+        decimal?[] sums = CalculateSums(table);
+        bool hasSums = sums.Any(x => x != null);
 
         Document.Create(container =>
         {
@@ -94,16 +164,16 @@ public static class ReportExporter
                 {
                     t.ColumnsDefinition(columns =>
                     {
-                        foreach (DataColumn c in table.Columns)
+                        foreach (DataColumn column in table.Columns)
                         {
                             columns.RelativeColumn();
                         }
                     });
                     t.Header(header =>
                     {
-                        foreach (DataColumn c in table.Columns)
+                        foreach (DataColumn column in table.Columns)
                         {
-                            header.Cell().Background(Colors.Grey.Lighten3).Padding(4).Text(c.ColumnName).Bold();
+                            header.Cell().Background(Colors.Grey.Lighten3).Padding(4).Text(column.ColumnName).Bold();
                         }
                     });
                     foreach (DataRow row in table.Rows)
@@ -112,6 +182,19 @@ public static class ReportExporter
                         {
                             t.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).Padding(4).Text(Format(item));
                         }
+                    }
+                    for (int i = 0; i < table.Columns.Count; i++)
+                    {
+                        string text = "";
+                        if (sums[i] != null)
+                        {
+                            text = FormatSum(table.Columns[i], sums[i]!.Value);
+                        }
+                        else if (i == 0)
+                        {
+                            text = hasSums ? "Итого" : "Всего записей: " + table.Rows.Count;
+                        }
+                        t.Cell().Background(Colors.Grey.Lighten4).Padding(4).Text(text).Bold();
                     }
                 });
 

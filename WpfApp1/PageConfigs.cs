@@ -54,7 +54,7 @@ public static class PageConfigs
             CanDelete = true,
             DeleteCheck = id => id == CurrentUser.Id ? "Нельзя удалить свою учётную запись." : null
         };
-        config.SearchExpressions.AddRange(new[] { "u.login", "u.full_name", "u.email" });
+        config.SearchExpressions.AddRange(new[] { "u.full_name", "u.login", "u.email" });
         config.Filters.Add(new FilterDef("Роль", "r.id", OptionLoader.Load("SELECT id, name FROM roles ORDER BY id")));
         AddSorts(config, ("ID", "u.id"), ("Логин", "u.login"), ("ФИО", "u.full_name"), ("Роль", "r.name"));
         config.Fields.Add(new FormField("login", "Логин", FieldType.Text)
@@ -170,7 +170,7 @@ public static class PageConfigs
         {
             config.BaseWhere = "o.user_id = " + CurrentUser.Id;
         }
-        config.SearchExpressions.AddRange(new[] { "o.comment", "u.full_name", "o.status" });
+        config.SearchExpressions.AddRange(new[] { "u.full_name", "o.comment", "o.status" });
         config.Filters.Add(new FilterDef("Статус", "o.status", Statuses()));
         if (!CurrentUser.IsUser)
         {
