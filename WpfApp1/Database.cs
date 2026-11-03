@@ -8,17 +8,40 @@ namespace CyberClubManager;
 public static class Database
 {
     private static string? connectionString;
+    private static string? rolePassword;
+
+    private static void LoadSettings()
+    {
+        string path = Path.Combine(AppContext.BaseDirectory, "appsettings.json");
+        string json = File.ReadAllText(path);
+        using JsonDocument doc = JsonDocument.Parse(json);
+        connectionString = doc.RootElement.GetProperty("ConnectionString").GetString();
+        if (doc.RootElement.TryGetProperty("RolePassword", out JsonElement element))
+        {
+            rolePassword = element.GetString();
+        }
+    }
 
     public static NpgsqlConnection GetConnection()
     {
         if (connectionString == null)
         {
-            string path = Path.Combine(AppContext.BaseDirectory, "appsettings.json");
-            string json = File.ReadAllText(path);
-            using JsonDocument doc = JsonDocument.Parse(json);
-            connectionString = doc.RootElement.GetProperty("ConnectionString").GetString();
+            LoadSettings();
         }
-        return new NpgsqlConnection(connectionString);
+        string text = connectionString!;
+        if (!string.IsNullOrEmpty(rolePassword) && CurrentUser.Role != "")
+        {
+            NpgsqlConnectionStringBuilder builder = new NpgsqlConnectionStringBuilder(text);
+            builder.Username = CurrentUser.Role switch
+            {
+                "Administrator" => "cc_admin",
+                "Manager" => "cc_manager",
+                _ => "cc_user"
+            };
+            builder.Password = rolePassword;
+            text = builder.ConnectionString;
+        }
+        return new NpgsqlConnection(text);
     }
 
     private static void AddParams(NpgsqlCommand cmd, (string Name, object? Value)[] parameters)
@@ -87,9 +110,9 @@ public static class Database
 
     public static void EnsureDemoAccounts()
     {
-        CreateAccount("admin", "Admin123!", "Администратор системы", "admin@cyberclub.local", "Administrator");
-        CreateAccount("manager", "Manager123!", "Менеджер клуба", "manager@cyberclub.local", "Manager");
-        CreateAccount("user", "User123!", "Тестовый пользователь", "user@cyberclub.local", "User");
+        CreateAccount("admin", "Admin123!", "Соколов Андрей Владимирович", "admin@cyberclub.local", "Administrator");
+        CreateAccount("manager", "Manager123!", "Морозова Елена Игоревна", "manager@cyberclub.local", "Manager");
+        CreateAccount("user", "User123!", "Новиков Павел Сергеевич", "user@cyberclub.local", "User");
     }
 
     private static void CreateAccount(string login, string password, string fullName, string email, string role)

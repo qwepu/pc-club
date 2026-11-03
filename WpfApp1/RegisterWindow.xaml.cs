@@ -23,9 +23,9 @@ public partial class RegisterWindow : Window
         {
             errors.Add("Логин: от 3 до 50 символов, только латинские буквы, цифры и _.");
         }
-        if (name == "")
+        if (!Regex.IsMatch(name, @"^\S+(\s+\S+){2,}$"))
         {
-            errors.Add("Введите ФИО.");
+            errors.Add("Введите ФИО полностью: фамилия, имя и отчество через пробел.");
         }
         if (email != "" && !Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
         {

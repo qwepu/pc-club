@@ -64,7 +64,13 @@ public static class PageConfigs
             Pattern = "^[A-Za-z0-9_]{3,50}$",
             PatternMessage = "Логин: от 3 до 50 символов, только латинские буквы, цифры и _."
         });
-        config.Fields.Add(new FormField("full_name", "ФИО", FieldType.Text) { Required = true, MaxLength = 100 });
+        config.Fields.Add(new FormField("full_name", "ФИО", FieldType.Text)
+        {
+            Required = true,
+            MaxLength = 100,
+            Pattern = @"^\S+(\s+\S+){2,}$",
+            PatternMessage = "Введите ФИО полностью: фамилия, имя и отчество через пробел."
+        });
         config.Fields.Add(new FormField("email", "Почта", FieldType.Text)
         {
             MaxLength = 100,
@@ -114,16 +120,17 @@ public static class PageConfigs
         {
             Title = "тариф",
             Table = "tariffs",
-            SelectSql = "SELECT t.id AS \"ID\", t.name AS \"Название\", t.price AS \"Цена\", CASE WHEN t.is_active THEN 'Да' ELSE 'Нет' END AS \"Действует\", t.description AS \"Описание\" FROM tariffs t",
+            SelectSql = "SELECT t.id AS \"ID\", t.name AS \"Название\", t.price AS \"Цена\", t.hours AS \"Часов\", CASE WHEN t.is_active THEN 'Да' ELSE 'Нет' END AS \"Действует\", t.description AS \"Описание\" FROM tariffs t",
             CanAdd = canEdit,
             CanEdit = canEdit,
             CanDelete = canEdit
         };
         config.SearchExpressions.AddRange(new[] { "t.name", "t.description" });
         config.Filters.Add(new FilterDef("Действует", "t.is_active", YesNoFilter("Да", "Нет")));
-        AddSorts(config, ("ID", "t.id"), ("Название", "t.name"), ("Цена", "t.price"), ("Действует", "t.is_active"));
+        AddSorts(config, ("ID", "t.id"), ("Название", "t.name"), ("Цена", "t.price"), ("Часов", "t.hours"), ("Действует", "t.is_active"));
         config.Fields.Add(new FormField("name", "Название", FieldType.Text) { Required = true, MaxLength = 50 });
-        config.Fields.Add(new FormField("price", "Цена, руб.", FieldType.Decimal) { Required = true, Min = 0, Max = 99999999 });
+        config.Fields.Add(new FormField("price", "Цена за пакет, руб.", FieldType.Decimal) { Required = true, Min = 0, Max = 99999999 });
+        config.Fields.Add(new FormField("hours", "Длительность пакета, ч", FieldType.Integer) { Required = true, Min = 1, Max = 24 });
         config.Fields.Add(new FormField("is_active", "Действует", FieldType.Combo) { Required = true, Options = YesNo("Да", "Нет") });
         config.Fields.Add(new FormField("description", "Описание", FieldType.Multiline) { MaxLength = 500 });
         return config;

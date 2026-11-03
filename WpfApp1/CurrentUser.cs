@@ -6,6 +6,7 @@ public static class CurrentUser
     public static string Login { get; private set; } = "";
     public static string FullName { get; private set; } = "";
     public static string Role { get; private set; } = "";
+    public static string PasswordHash { get; private set; } = "";
 
     public static bool IsAdmin => Role == "Administrator";
     public static bool IsManager => Role == "Manager";
@@ -27,8 +28,19 @@ public static class CurrentUser
         Role = role;
     }
 
+    public static void SetFullName(string fullName)
+    {
+        FullName = fullName;
+    }
+
+    public static void SetPasswordHash(string hash)
+    {
+        PasswordHash = hash;
+    }
+
     public static void Clear()
     {
+        PasswordHash = "";
         Id = 0;
         Login = "";
         FullName = "";

@@ -10,7 +10,12 @@ public partial class MainWindow : Window
         InitializeComponent();
         UserText.Text = CurrentUser.FullName;
         RoleText.Text = CurrentUser.RoleTitle;
+        ThemeButton.Content = ThemeManager.IsDark ? "Светлая тема" : "Тёмная тема";
 
+        if (!CurrentUser.IsUser)
+        {
+            AddTab("Главная", new DashboardPage());
+        }
         if (CurrentUser.IsAdmin)
         {
             AddTab("Пользователи", new CrudPage(PageConfigs.Users()));
@@ -28,11 +33,31 @@ public partial class MainWindow : Window
         {
             AddTab("Отчёты", new ReportsPage());
         }
+        AddTab("Личный кабинет", new ProfilePage());
+    }
+
+    private void Theme_Click(object sender, RoutedEventArgs e)
+    {
+        ThemeManager.Apply(!ThemeManager.IsDark);
+        ThemeManager.Save();
+        new MainWindow().Show();
+        Close();
+    }
+
+    public void RefreshHeader()
+    {
+        UserText.Text = CurrentUser.FullName;
     }
 
     private void AddTab(string header, UserControl content)
     {
         Tabs.Items.Add(new TabItem { Header = header, Content = content });
+    }
+
+    private void ChangePassword_Click(object sender, RoutedEventArgs e)
+    {
+        ChangePasswordWindow window = new ChangePasswordWindow { Owner = this };
+        window.ShowDialog();
     }
 
     private void Logout_Click(object sender, RoutedEventArgs e)

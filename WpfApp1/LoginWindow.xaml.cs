@@ -5,6 +5,8 @@ namespace CyberClubManager;
 
 public partial class LoginWindow : Window
 {
+    private static readonly Dictionary<string, (int Fails, DateTime LockedUntil)> attempts = new();
+
     public LoginWindow()
     {
         InitializeComponent();
@@ -23,6 +25,14 @@ public partial class LoginWindow : Window
             return;
         }
 
+        string key = login.ToLowerInvariant();
+        if (attempts.TryGetValue(key, out var state) && state.LockedUntil > DateTime.Now)
+        {
+            int seconds = (int)Math.Ceiling((state.LockedUntil - DateTime.Now).TotalSeconds);
+            ErrorText.Text = "Слишком много неверных попыток. Повторите через " + seconds + " сек.";
+            return;
+        }
+
         try
         {
             DataTable dt = Database.Query(
@@ -31,9 +41,11 @@ public partial class LoginWindow : Window
 
             if (dt.Rows.Count == 0 || !Security.Verify(password, dt.Rows[0]["password_hash"].ToString() ?? ""))
             {
+                RegisterFail(key);
                 ErrorText.Text = "Неверный логин или пароль.";
                 return;
             }
+            attempts.Remove(key);
 
             DataRow row = dt.Rows[0];
             CurrentUser.Set(
@@ -41,6 +53,7 @@ public partial class LoginWindow : Window
                 row["login"].ToString() ?? "",
                 row["full_name"].ToString() ?? "",
                 row["role_name"].ToString() ?? "");
+            CurrentUser.SetPasswordHash(row["password_hash"].ToString() ?? "");
             Audit.Write("LOGIN", "users", "Вход в систему, роль: " + CurrentUser.RoleTitle);
 
             new MainWindow().Show();
@@ -50,6 +63,18 @@ public partial class LoginWindow : Window
         {
             ErrorText.Text = ErrorHelper.GetMessage(ex);
         }
+    }
+
+    private static void RegisterFail(string key)
+    {
+        int fails = attempts.TryGetValue(key, out var old) ? old.Fails + 1 : 1;
+        DateTime until = DateTime.MinValue;
+        if (fails >= 5)
+        {
+            until = DateTime.Now.AddMinutes(2);
+            fails = 0;
+        }
+        attempts[key] = (fails, until);
     }
 
     private void Register_Click(object sender, RoutedEventArgs e)

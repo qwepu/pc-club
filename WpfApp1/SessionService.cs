@@ -16,7 +16,8 @@ public static class SessionService
         conn.Open();
         using NpgsqlTransaction tx = conn.BeginTransaction();
 
-        object? available = Database.ScalarTx(conn, tx, "SELECT status FROM computers WHERE id = @c FOR UPDATE", ("c", computerId));
+        Database.ScalarTx(conn, tx, "SELECT pg_advisory_xact_lock(@c)", ("c", computerId));
+        object? available = Database.ScalarTx(conn, tx, "SELECT status FROM computers WHERE id = @c", ("c", computerId));
         if (available == null || !(bool)available)
         {
             throw new UserMessageException("Этот компьютер сейчас недоступен.");
@@ -58,7 +59,7 @@ public static class SessionService
             throw new UserMessageException("Вы можете завершать только свои сеансы.");
         }
         int rows = Database.Execute(
-            "UPDATE game_sessions s SET end_time = CURRENT_TIMESTAMP, cost = t.price FROM tariffs t WHERE t.id = s.tariff_id AND s.id = @id AND s.end_time IS NULL",
+            "UPDATE game_sessions s SET end_time = LOCALTIMESTAMP, cost = t.price * GREATEST(1, CEIL(EXTRACT(EPOCH FROM (LOCALTIMESTAMP - s.start_time)) / 3600.0 / t.hours)) FROM tariffs t WHERE t.id = s.tariff_id AND s.id = @id AND s.end_time IS NULL",
             ("id", sessionId));
         if (rows == 0)
         {

@@ -8,7 +8,7 @@
         <TextBlock Text="Создать аккаунт" FontSize="22" FontWeight="Bold" Margin="4,0,4,8"/>
         <TextBlock Text="Логин * (латиница, цифры, _; от 3 символов)" Style="{StaticResource LabelText}"/>
         <TextBox x:Name="LoginBox" MaxLength="50"/>
-        <TextBlock Text="ФИО *" Style="{StaticResource LabelText}"/>
+        <TextBlock Text="ФИО * (фамилия, имя и отчество)" Style="{StaticResource LabelText}"/>
         <TextBox x:Name="NameBox" MaxLength="100"/>
         <TextBlock Text="Почта" Style="{StaticResource LabelText}"/>
         <TextBox x:Name="EmailBox" MaxLength="100"/>
@@ -16,7 +16,7 @@
         <PasswordBox x:Name="PasswordInput" MaxLength="64"/>
         <TextBlock Text="Повтор пароля *" Style="{StaticResource LabelText}"/>
         <PasswordBox x:Name="PasswordRepeat" MaxLength="64"/>
-        <TextBlock x:Name="ErrorText" Foreground="{StaticResource DangerBrush}" TextWrapping="Wrap" Margin="4,10,4,0"/>
+        <TextBlock x:Name="ErrorText" Foreground="{DynamicResource DangerBrush}" TextWrapping="Wrap" Margin="4,10,4,0"/>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,14,0,0">
             <Button Content="Отмена" IsCancel="True"/>
             <Button Content="Зарегистрироваться" Style="{StaticResource PrimaryButton}" IsDefault="True" Click="Register_Click"/>
